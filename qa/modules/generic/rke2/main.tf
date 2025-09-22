@@ -206,6 +206,7 @@ resource "ssh_resource" "agent_installation" {
 locals {
   get_rke2_path            = "/tmp/get_rke2.sh"
   local_kubernetes_api_url = "https://${var.sans[0]}:${var.local_kubernetes_api_port}"
+  kubernetes_api_url = var.network_config.ssh_bastion_host == null ? "https://${module.server_nodes[0].public_name}:6443" : "https://${module.server_nodes[0].private_name}:6443"
 }
 
 resource "local_file" "ssh_script_servers" {
@@ -301,5 +302,44 @@ resource "local_file" "kubeconfig" {
   })
 
   filename        = "${path.root}/${terraform.workspace}_config/${var.name}.yaml"
+  file_permission = "0700"
+}
+
+resource "local_file" "kubeconfig-direct" {
+  content = yamlencode({
+    apiVersion = "v1"
+    clusters = [
+      {
+        cluster = {
+          certificate-authority-data = base64encode(tls_self_signed_cert.server_ca_cert.cert_pem)
+          server                     = local.kubernetes_api_url
+        }
+        name = var.name
+      }
+    ]
+    contexts = [
+      {
+        context = {
+          cluster = var.name
+          user = "admin@${var.name}"
+        }
+        name = var.name
+      }
+    ]
+    current-context = var.name
+    kind            = "Config"
+    preferences     = {}
+    users = [
+      {
+        user = {
+          client-certificate-data : base64encode(tls_locally_signed_cert.master_user.cert_pem)
+          client-key-data : base64encode(tls_private_key.master_user.private_key_pem)
+        }
+        name = "admin@${var.name}"
+      }
+    ]
+  })
+
+  filename        = "${path.root}/${terraform.workspace}_config/${var.name}-direct.yaml"
   file_permission = "0700"
 }
