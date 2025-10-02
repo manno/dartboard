@@ -36,23 +36,12 @@ tofu_variables:
       root_volume_size_gb: 50
   upstream_cluster_distro_module: generic/rke2
 
-  # tester_cluster:
-  #   server_count: 0
-  #   agent_count: 0
-  #   distro_version: v1.33.1+k3s1
-  #   public_ip: false
-  #   reserve_node_for_monitoring: false
-  #   enable_audit_log: false
-  #   node_module_variables:
-  #     instance_type: t3a.large
-  #     ami: ami-02889b173d15868e5 # openSUSE-Leap-15-6-v20250408-hvm-ssd-x86_64-5535c495-72d4-4355-b169-54ffa874f849
-  #     root_volume_size_gb: 50
-  # tester_cluster_distro_module: generic/k3s
-
   downstream_cluster_templates:
     - cluster_count: 1
       server_count: 3
-      agent_count: 6
+      #agent_count: 6
+      agent_count: 23 # 2000 vclusters
+      #agent_count: 47 # 4000 vclusters
       distro_version: v1.33.4+rke2r1
       public_ip: false
       reserve_node_for_monitoring: false
@@ -73,7 +62,7 @@ tofu_variables:
   downstream_cluster_distro_module: generic/rke2
 
   # downstream_cluster_templates:
-  #   - cluster_count: 2000
+  #   - cluster_count: 1000
   #     server_count: 1
   #     agent_count: 0
   #     distro_version: v1.33.4+k3s1
